@@ -1,10 +1,8 @@
-from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QComboBox
-)
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import QVBoxLayout
+from PySide6.QtCore import Signal
 from base_widget import BaseWidget
 from auth_manager import AuthManager
+from ui_register_screen import Ui_Form
 
 
 class RegisterScreen(BaseWidget):
@@ -13,81 +11,31 @@ class RegisterScreen(BaseWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setup_ui()
 
-    def setup_ui(self):
-        self.setMinimumWidth(400)
-        layout = QVBoxLayout(self)
-        layout.setAlignment(Qt.AlignCenter)
-        layout.setSpacing(12)
-        layout.setContentsMargins(60, 30, 60, 30)
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)   # 🔥 kritik
 
-        title = QLabel("Kayıt Ol")
-        title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 8px;")
-        layout.addWidget(title)
+        self.setup_connections()
 
-        self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText("Kullanıcı adı")
-        self.username_input.setMinimumHeight(36)
-        layout.addWidget(self.username_input)
-
-        self.email_input = QLineEdit()
-        self.email_input.setPlaceholderText("E-posta")
-        self.email_input.setMinimumHeight(36)
-        layout.addWidget(self.email_input)
-
-        self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText("Şifre")
-        self.password_input.setEchoMode(QLineEdit.Password)
-        self.password_input.setMinimumHeight(36)
-        layout.addWidget(self.password_input)
-
-        self.password2_input = QLineEdit()
-        self.password2_input.setPlaceholderText("Şifre tekrar")
-        self.password2_input.setEchoMode(QLineEdit.Password)
-        self.password2_input.setMinimumHeight(36)
-        layout.addWidget(self.password2_input)
-
-        role_label = QLabel("Hesap türü:")
-        layout.addWidget(role_label)
-
-        self.role_combo = QComboBox()
-        self.role_combo.addItem("İş Arayan", "jobseeker")
-        self.role_combo.addItem("İşveren", "employer")
-        self.role_combo.setMinimumHeight(36)
-        layout.addWidget(self.role_combo)
-
-        register_btn = QPushButton("Kayıt Ol")
-        register_btn.setMinimumHeight(38)
-        register_btn.setStyleSheet("background-color: #16a34a; color: white; border-radius: 6px; font-size: 14px;")
-        register_btn.clicked.connect(self.do_register)
-        layout.addWidget(register_btn)
-
-        back_layout = QHBoxLayout()
-        back_layout.addWidget(QLabel("Zaten hesabın var mı?"))
-        back_btn = QPushButton("Giriş Yap")
-        back_btn.setFlat(True)
-        back_btn.setStyleSheet("color: #2563eb; font-weight: bold;")
-        back_btn.clicked.connect(self.go_login.emit)
-        back_layout.addWidget(back_btn)
-        back_layout.addStretch()
-        layout.addLayout(back_layout)
+    def setup_connections(self):
+        self.ui.registerBtn.clicked.connect(self.do_register)
+        self.ui.loginBtn.clicked.connect(self.go_login.emit)
 
     def do_register(self):
-        username = self.username_input.text().strip()
-        email = self.email_input.text().strip()
-        password = self.password_input.text().strip()
-        password2 = self.password2_input.text().strip()
-        role = self.role_combo.currentData()
+        username = self.ui.username_input.text().strip()
+        email = self.ui.email_input.text().strip()
+        password = self.ui.password_input.text().strip()
+        password2 = self.ui.password2_input.text().strip()
+        role = self.ui.role_combo.currentText()
 
         if password != password2:
-            self.show_message("Hata", "Şifreler eşleşmiyor.", "error")
+            self.show_message("Error", "Passwords do not match.", "error")
             return
 
         ok, msg = AuthManager.register(username, password, email, role)
+
         if ok:
-            self.show_message("Başarılı", msg, "success")
+            self.show_message("Success", msg, "success")
             self.register_success.emit()
         else:
-            self.show_message("Hata", msg, "error")
+            self.show_message("Error", msg, "error")

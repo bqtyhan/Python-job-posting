@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>742</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QFrame" name="left_menu_frame">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LayoutDirection::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #1e293b;
+</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Shape::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>15</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="lbl_logo">
+         <property name="styleSheet">
+          <string notr="true">color: white;
+font-size: 15px;
+font-weight: bold;
+padding: 10px;</string>
+         </property>
+         <property name="text">
+          <string>🗂 İş İlan Sistemi</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lbl_username">
+         <property name="styleSheet">
+          <string notr="true">color: #94a3b8;
+font-size: 12px;
+padding: 10px;</string>
+         </property>
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_jobs">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    color: #cbd5e1; 
+    background: transparent; 
+    border: none;
+    text-align: left; 
+    padding: 12px 18px; 
+    font-size: 13px;
+    border-radius: 6px;
+}
+QPushButton:hover { 
+    background-color: #334155; 
+    color: white; 
+}</string>
+         </property>
+         <property name="text">
+          <string>🔍 İlanları Gözat</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_apps">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    color: #cbd5e1; 
+    background: transparent; 
+    border: none;
+    text-align: left; 
+    padding: 12px 18px; 
+    font-size: 13px;
+    border-radius: 6px;
+}
+QPushButton:hover { 
+    background-color: #334155; 
+    color: white; 
+}</string>
+         </property>
+         <property name="text">
+          <string>📋 Başvurularım</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_employer">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    color: #cbd5e1; 
+    background: transparent; 
+    border: none;
+    text-align: left; 
+    padding: 12px 18px; 
+    font-size: 13px;
+    border-radius: 6px;
+}
+QPushButton:hover { 
+    background-color: #334155; 
+    color: white; 
+}</string>
+         </property>
+         <property name="text">
+          <string>🏢 İşveren Paneli</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_admin">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    color: #cbd5e1; 
+    background: transparent; 
+    border: none;
+    text-align: left; 
+    padding: 12px 18px; 
+    font-size: 13px;
+    border-radius: 6px;
+}
+QPushButton:hover { 
+    background-color: #334155; 
+    color: white; 
+}</string>
+         </property>
+         <property name="text">
+          <string>⚙️ Admin Paneli</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>161</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_logout">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    color: #f87171; 
+}
+QPushButton:hover { 
+    background-color: #450a0a; 
+}</string>
+         </property>
+         <property name="text">
+          <string>🚪 Çıkış Yap</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QStackedWidget" name="main_pages">
+      <widget class="QWidget" name="page"/>
+      <widget class="QWidget" name="page_2"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
