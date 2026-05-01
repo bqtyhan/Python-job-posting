@@ -1,52 +1,30 @@
-from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QWidget, QFrame
-)
+from PySide6.QtWidgets import QFrame, QLabel, QWidget
 from PySide6.QtCore import Qt, Signal
 from base_widget import BaseWidget
-from job import Job
-from search_filter_widget import SearchFilterWidget
+from job import Job, JobCategory  # JobCategory'yi de import ediyoruz
+from ui_job_listing_screen import Ui_Form  # Ana ekran tasarımı
+from ui_job_card import Ui_JobCard  # Yeni kart tasarımı
 
 
 class JobCard(QFrame):
+    """Designer ile tasarlanan ilan kartı sınıfı"""
     clicked = Signal(int)
 
     def __init__(self, job, parent=None):
         super().__init__(parent)
+        self.ui = Ui_JobCard()
+        self.ui.setupUi(self)  # Tasarımı ve CSS'i yükler
         self.job = job
-        self.setFrameShape(QFrame.StyledPanel)
-        self.setCursor(Qt.PointingHandCursor)
-        self.setStyleSheet("""
-            QFrame { border: 1px solid #e2e8f0; border-radius: 8px; background: white; }
-            QFrame:hover { border-color: #2563eb; background: #f0f7ff; }
-        """)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(14, 10, 14, 10)
-        layout.setSpacing(4)
 
-        top = QHBoxLayout()
-        title_lbl = QLabel(job.title)
-        title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #1e293b;")
-        top.addWidget(title_lbl)
-        top.addStretch()
-        date_lbl = QLabel(job.created_at[:10] if job.created_at else "")
-        date_lbl.setStyleSheet("color: gray; font-size: 12px;")
-        top.addWidget(date_lbl)
-        layout.addLayout(top)
-
-        company_lbl = QLabel(f"🏢 {job.company}")
-        company_lbl.setStyleSheet("color: #475569;")
-        layout.addWidget(company_lbl)
-
-        info = QHBoxLayout()
-        info.addWidget(QLabel(f"📍 {job.location}"))
-        info.addSpacing(16)
-        salary_text = job.salary if job.salary else "Belirtilmemiş"
-        info.addWidget(QLabel(f"💰 {salary_text}"))
-        info.addStretch()
-        layout.addLayout(info)
+        # Verileri etiketlere basıyoruz
+        self.ui.lbl_title.setText(job.title)
+        self.ui.lbl_date.setText(job.created_at[:10] if job.created_at else "")
+        self.ui.lbl_company.setText(f"🏢 {job.company}")
+        self.ui.lbl_location.setText(f"📍 {job.location}")
+        self.ui.lbl_salary.setText(f"💰 {job.salary or 'Belirtilmemiş'}")
 
     def mousePressEvent(self, event):
+        """Karta tıklandığında ilan ID'sini fırlatır"""
         self.clicked.emit(self.job.id)
 
 
@@ -55,54 +33,76 @@ class JobListingScreen(BaseWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setup_ui()
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)  # Ana ekran tasarımını yükler
+
+        # 1. Kategorileri veritabanından ComboBox'a yükle
+        self.load_categories()
+
+        # 2. Buton bağlantıları
+        self.ui.btn_search.clicked.connect(self.do_search)
+        self.ui.btn_reset.clicked.connect(self.reset_filters)
+
+        # 3. İlanları başlangıçta getir
         self.load_jobs()
 
-    def setup_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(10)
+    def load_categories(self):
+        """Veritabanındaki kategorileri ID'leri ile birlikte kutuya doldurur"""
+        self.ui.combo_category.clear()
+        # İlk seçenek 'Tümü' (Verisi None olur, SQL'de filtreyi devre dışı bırakır)
+        self.ui.combo_category.addItem("Tüm Kategoriler", None)
 
-        header = QLabel("İş İlanları")
-        header.setStyleSheet("font-size: 20px; font-weight: bold;")
-        layout.addWidget(header)
-
-        self.search_widget = SearchFilterWidget()
-        self.search_widget.search_clicked.connect(self.do_search)
-        layout.addWidget(self.search_widget)
-
-        self.count_label = QLabel("")
-        self.count_label.setStyleSheet("color: gray; font-size: 13px;")
-        layout.addWidget(self.count_label)
-
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.NoFrame)
-        self.jobs_container = QWidget()
-        self.jobs_layout = QVBoxLayout(self.jobs_container)
-        self.jobs_layout.setAlignment(Qt.AlignTop)
-        self.jobs_layout.setSpacing(8)
-        scroll.setWidget(self.jobs_container)
-        layout.addWidget(scroll)
+        # JobCategory sınıfını kullanarak DB'deki tüm kategorileri çek
+        categories = JobCategory.get_all()
+        for cat in categories:
+            # addItem(Görünen İsim, Arka Plandaki Veri/ID)
+            self.ui.combo_category.addItem(cat.name, cat.id)
 
     def load_jobs(self, jobs=None):
-        if jobs is None:
-            jobs = Job.get_all()
-        self.clear_layout(self.jobs_layout)
-        self.count_label.setText(f"{len(jobs)} ilan bulundu")
+        """İlanları listeye dizer"""
+        layout = self.ui.jobs_container.layout()
+
+        # Temizlik: Mevcut kartları sil, Spacer'ı (mavi yay) koru
+        while layout.count() > 1:
+            item = layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        jobs = jobs if jobs is not None else Job.get_all()
+        self.ui.lbl_count.setText(f"{len(jobs)} ilan bulundu")
 
         if not jobs:
             lbl = QLabel("Hiç ilan bulunamadı.")
             lbl.setAlignment(Qt.AlignCenter)
-            lbl.setStyleSheet("color: gray; margin-top: 40px; font-size: 14px;")
-            self.jobs_layout.addWidget(lbl)
+            lbl.setStyleSheet("color: gray; margin-top: 40px;")
+            layout.insertWidget(0, lbl)
             return
 
         for job in jobs:
             card = JobCard(job)
             card.clicked.connect(self.job_selected.emit)
-            self.jobs_layout.addWidget(card)
+            # Kartı Spacer'ın üzerine yerleştir
+            layout.insertWidget(layout.count() - 1, card)
 
-    def do_search(self, keyword, category_id, location):
-        results = Job.search(keyword, category_id if category_id else None, location)
+    def do_search(self):
+        """Seçili kategori ID'sine ve metinlere göre filtreleme yapar"""
+        keyword = self.ui.txt_search.text()
+        location = self.ui.txt_location.text()
+
+        # Seçili olan kategorinin arka planda tutulan ID değerini alıyoruz
+        category_id = self.ui.combo_category.currentData()
+
+        # Veritabanı sorgusunu çalıştır
+        results = Job.search(
+            keyword=keyword,
+            category_id=category_id,
+            location=location
+        )
         self.load_jobs(results)
+
+    def reset_filters(self):
+        """Filtreleri temizler ve listeyi tazeler"""
+        self.ui.txt_search.clear()
+        self.ui.txt_location.clear()
+        self.ui.combo_category.setCurrentIndex(0)
+        self.load_jobs()
