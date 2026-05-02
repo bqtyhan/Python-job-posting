@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* Genel Arka Plan ve Yazı */
+QWidget {
+    background-color: #f8fafc;
+    font-family: 'Segoe UI', sans-serif;
+    color: #1e293b;
+}
+
+/* Tablo Tasarımı */
+QTableWidget {
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    gridline-color: transparent; /* Izgara çizgilerini gizle */
+}
+
+QHeaderView::section {
+    background-color: #f1f5f9;
+    padding: 8px;
+    border: none;
+    border-bottom: 2px solid #e2e8f0;
+    font-weight: bold;
+    color: #64748b;
+}
+
+/* Butonlar */
+#btn_add_job {
+    background-color: #16a34a; /* Yeşil */
+    color: white;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: bold;
+}
+
+#btn_accept {
+    background-color: #2563eb; /* Mavi */
+    color: white;
+    border-radius: 6px;
+    padding: 6px 14px;
+}
+
+#btn_reject {
+    background-color: #dc2626; /* Kırmızı */
+    color: white;
+    border-radius: 6px;
+    padding: 6px 14px;
+}
+
+/* Tab Sayfaları */
+QTabWidget::pane {
+    border: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+}
+
+QTabBar::tab {
+    background: #f1f5f9;
+    padding: 10px 20px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-right: 2px;
+}
+
+QTabBar::tab:selected {
+    background: white;
+    border-bottom: 2px solid #2563eb;
+    font-weight: bold;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="lbl_header">
+     <property name="styleSheet">
+      <string notr="true">#lbl_header {
+    color: #0f172a; /* Çok koyu, premium bir ton */
+    font-size: 15px; /* Başlık olduğu uzaktan belli olsun */
+    font-weight: 800; /* Ekstra kalın font */
+    letter-spacing: -0.5px; /* Harfleri biraz yaklaştırarak modern bir hava verdik */
+    padding: 5px 0px; /* Üstten ve alttan biraz boşluk */
+    /* Altına çok hafif, modern bir çizgi ekleyerek ayırıyoruz */
+    border-bottom: 2px solid #e2e8f0; 
+    margin-bottom: 5px;
+}</string>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="tabs">
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>İlanlarım</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QPushButton" name="btn_add_job">
+           <property name="text">
+            <string>+ Yeni İlan Ekle</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>268</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="jobs_table">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+         </property>
+         <property name="showGrid">
+          <bool>false</bool>
+         </property>
+         <property name="columnCount">
+          <number>6</number>
+         </property>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>ID</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Başlık</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Şirket</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Konum</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Durum</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>İşlem</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Başvurular</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QTableWidget" name="apps_table">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+         </property>
+         <property name="showGrid">
+          <bool>false</bool>
+         </property>
+         <property name="columnCount">
+          <number>6</number>
+         </property>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>ID</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>İlan</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Başvuran</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>E-posta</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Tarih</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Durum</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout"/>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QPushButton" name="btn_accept">
+           <property name="text">
+            <string>Kabul et</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_reject">
+           <property name="text">
+            <string>Reddet</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>178</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

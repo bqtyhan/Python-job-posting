@@ -33,12 +33,21 @@ class MainWindow(QMainWindow):
         self.show_auth()
 
     def switch_page(self, screen_class, *args):
-        """Tüm sayfa geçişlerini tek elden yöneten sihirli fonksiyon"""
         while self.stack.count():
             self.stack.removeWidget(self.stack.widget(0))
 
         screen = screen_class(*args)
-        # Özel durum: İlan listesinden detaya geçiş
+
+        # 🔥 LOGIN → REGISTER
+        if isinstance(screen, LoginScreen):
+            screen.go_register.connect(lambda: self.switch_page(RegisterScreen))
+            screen.login_success.connect(self.after_login)
+
+        # 🔥 REGISTER → LOGIN
+        if isinstance(screen, RegisterScreen):
+            screen.go_login.connect(lambda: self.switch_page(LoginScreen))
+
+        # diğer ekranlar
         if isinstance(screen, JobListingScreen):
             screen.job_selected.connect(lambda j_id: self.switch_page(JobDetailScreen, j_id))
         elif isinstance(screen, JobDetailScreen):
@@ -48,25 +57,38 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(screen)
 
     def show_auth(self):
-        """Giriş/Kayıt ekranlarını yönetir"""
         self.sidebar.hide()
-        login = LoginScreen()
-        login.login_success.connect(self.after_login)
-        login.go_register.connect(lambda: self.switch_page(RegisterScreen))  # Register'da başarıyı login'e bağla
-        self.stack.addWidget(login)
-        self.stack.setCurrentWidget(login)
+        self.switch_page(LoginScreen)
 
     def after_login(self):
-        """Giriş sonrası menüyü hazırlar"""
         self.sidebar.show()
         user = AuthManager.current_user
+
+        # Debug satırı kalsın, kiminle girdiğini gör (İşin bitince silersin)
+        print(f"GİRİŞ BAŞARILI | Kullanıcı: {user.username} | Rol: {user.role}")
+
         self.ui.lbl_username.setText(f"{user.username}\n({user.role})")
 
-        # Yetki Kontrolü (Sadece yetkisi olan butonları göster)
-        self.ui.btn_apps.setVisible(AuthManager.is_jobseeker())
-        self.ui.btn_employer.setVisible(AuthManager.is_employer())
-        self.ui.btn_admin.setVisible(AuthManager.is_admin())
+        # --- YETKİ KONTROLÜ (Visibility) ---
 
+        # Rolü 'admin' olanlar her şeyi görebilir mi?
+        # Yoksa sadece admin panelini mi görsünler? Aşağıdaki mantık en temizi:
+
+        rol = user.role.lower()  # Büyük/küçük harf duyarlılığını bitirelim
+
+        # Admin Paneli Butonu: Sadece admin görsün
+        self.ui.btn_admin.setVisible(rol == "admin")
+
+        # İşveren Paneli Butonu: Sadece employer (işveren) veya admin görsün
+        self.ui.btn_employer.setVisible(rol == "employer" or rol == "admin")
+
+        # Başvurularım Butonu: Sadece iş arayanlar (jobseeker) görsün
+        # Not: Görsellerinde 'jobseeker' veya 'Job Seeker' yazıyor,
+        # veritabanında hangisi varsa ona göre kontrol et.
+        self.ui.btn_apps.setVisible(rol in ["jobseeker", "job seeker", "seeker"])
+
+        # --- SAYFA YÖNLENDİRMESİ ---
+        # Giriş yapınca herkesi önce ilanlara gönderelim
         self.switch_page(JobListingScreen)
 
     def logout(self):

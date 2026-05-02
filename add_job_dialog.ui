@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AddJobDialog</class>
+ <widget class="QDialog" name="AddJobDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>310</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Yeni İlan Ekle</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* Genel Ayarlar */
+QWidget {
+    background-color: #f8fafc;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Giriş Alanları */
+QLineEdit, QTextEdit, QComboBox {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px;
+    background-color: white;
+}
+
+QLineEdit:focus, QTextEdit:focus, QComboBox:focus {
+    border: 2px solid #3b82f6; /* Odaklanınca mavi kenarlık */
+}
+
+/* Kaydet Butonu (Mavi) */
+#btn_save {
+    background-color: #2563eb;
+    color: white;
+    border-radius: 6px;
+    padding: 8px 24px;
+    font-weight: bold;
+}
+
+#btn_save:hover {
+    background-color: #1d4ed8;
+}
+
+/* İptal Butonu (Gri/Beyaz) */
+#btn_cancel {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px 20px;
+}
+
+#btn_cancel:hover {
+    background-color: #e2e8f0;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLineEdit" name="txt_title">
+       <property name="placeholderText">
+        <string>İş başlığı</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="txt_company">
+       <property name="placeholderText">
+        <string>Şirket</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLineEdit" name="txt_location">
+       <property name="placeholderText">
+        <string>Konum</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLineEdit" name="txt_salary">
+       <property name="placeholderText">
+        <string>Maaş</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QComboBox" name="combo_category">
+       <property name="placeholderText">
+        <string>Kategori</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QPlainTextEdit" name="txt_description">
+       <property name="styleSheet">
+        <string notr="true">#txt_description {
+    background-color: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    /* Metnin kenarlara yapışmaması için ferah bir alan bırakıyoruz */
+    padding: 8px 10px; 
+    color: #1e293b;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 13px;
+    /* Kutunun çok ezilmemesi için en az bir yükseklik veriyoruz */
+    min-height: 100px; 
+}
+
+/* Kutuya tıklandığında (Odaklanınca) mavi çerçeve olsun */
+#txt_description:focus {
+    border: 2px solid #3b82f6;
+    background-color: #ffffff;
+}
+
+/* Eğer placeholder rengi çok sönükse bunu ekleyebilirsin */
+QPlainTextEdit {
+    color: #1e293b;
+}</string>
+       </property>
+       <property name="placeholderText">
+        <string>Açıklama</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>208</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_cancel">
+       <property name="text">
+        <string>İptal</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_save">
+       <property name="text">
+        <string>Kaydet</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

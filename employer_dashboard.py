@@ -1,9 +1,4 @@
-from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QTableWidget, QTableWidgetItem, QHeaderView,
-    QDialog, QFormLayout, QLineEdit, QTextEdit,
-    QComboBox, QFrame, QTabWidget, QWidget
-)
+from PySide6.QtWidgets import QDialog, QTableWidgetItem, QPushButton, QLabel
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from base_widget import BaseWidget
@@ -11,202 +6,127 @@ from job import Job, JobCategory
 from application import Application, ApplicationStatus
 from auth_manager import AuthManager
 from notification_manager import NotificationManager
-from database import db
+
+# Designer'dan çevirdiğin dosyaları import ediyoruz
+from ui_employer_dashboard import Ui_Form
+from ui_add_job_dialog import Ui_AddJobDialog
 
 
 class AddJobDialog(QDialog):
+    """Yeni ilan ekleme ve düzenleme penceresi"""
+
     def __init__(self, parent=None, job=None):
         super().__init__(parent)
+        self.ui = Ui_AddJobDialog()
+        self.ui.setupUi(self)
         self.job = job
-        self.setWindowTitle("İlan Düzenle" if job else "Yeni İlan Ekle")
-        self.setMinimumWidth(450)
-        self.setup_ui()
 
-    def setup_ui(self):
-        layout = QVBoxLayout(self)
-        form = QFormLayout()
-        form.setSpacing(10)
+        # Kategorileri veritabanından çekip ComboBox'ı doldur
+        self.populate_categories()
 
-        self.title_input = QLineEdit()
-        self.title_input.setMinimumHeight(34)
-        form.addRow("İş Başlığı:", self.title_input)
-
-        self.company_input = QLineEdit()
-        self.company_input.setMinimumHeight(34)
-        form.addRow("Şirket:", self.company_input)
-
-        self.location_input = QLineEdit()
-        self.location_input.setMinimumHeight(34)
-        form.addRow("Konum:", self.location_input)
-
-        self.salary_input = QLineEdit()
-        self.salary_input.setMinimumHeight(34)
-        form.addRow("Maaş (isteğe bağlı):", self.salary_input)
-
-        self.category_combo = QComboBox()
-        self.category_combo.setMinimumHeight(34)
-        for cat in JobCategory.get_all():
-            self.category_combo.addItem(cat.name, cat.id)
-        form.addRow("Kategori:", self.category_combo)
-
-        self.desc_input = QTextEdit()
-        self.desc_input.setMaximumHeight(120)
-        form.addRow("Açıklama:", self.desc_input)
-
-        layout.addLayout(form)
-
+        # Eğer düzenleme modundaysak verileri doldur
         if self.job:
-            self.title_input.setText(self.job.title)
-            self.company_input.setText(self.job.company)
-            self.location_input.setText(self.job.location)
-            self.salary_input.setText(self.job.salary or "")
-            self.desc_input.setPlainText(self.job.description or "")
-            for i in range(self.category_combo.count()):
-                if self.category_combo.itemData(i) == self.job.category_id:
-                    self.category_combo.setCurrentIndex(i)
-                    break
+            self.setWindowTitle("İlan Düzenle")
+            self.fill_data()
 
-        btn_layout = QHBoxLayout()
-        save_btn = QPushButton("Kaydet")
-        save_btn.setStyleSheet("background-color: #2563eb; color: white; border-radius: 5px; padding: 6px 20px;")
-        save_btn.clicked.connect(self.accept)
-        cancel_btn = QPushButton("İptal")
-        cancel_btn.clicked.connect(self.reject)
-        btn_layout.addStretch()
-        btn_layout.addWidget(cancel_btn)
-        btn_layout.addWidget(save_btn)
-        layout.addLayout(btn_layout)
+        # Buton bağlantıları
+        self.ui.btn_save.clicked.connect(self.accept)
+        self.ui.btn_cancel.clicked.connect(self.reject)
+
+    def populate_categories(self):
+        self.ui.combo_category.clear()
+        for cat in JobCategory.get_all():
+            self.ui.combo_category.addItem(cat.name, cat.id)
+
+    def fill_data(self):
+        self.ui.txt_title.setText(self.job.title)
+        self.ui.txt_company.setText(self.job.company)
+        self.ui.txt_location.setText(self.job.location)
+        self.ui.txt_salary.setText(self.job.salary or "")
+        self.ui.txt_description.setPlainText(self.job.description or "")
+        # Kategoriyi seçili getir
+        index = self.ui.combo_category.findData(self.job.category_id)
+        if index >= 0:
+            self.ui.combo_category.setCurrentIndex(index)
 
     def get_data(self):
+        """Penceredeki verileri sözlük olarak döndürür"""
         return {
-            "title": self.title_input.text().strip(),
-            "company": self.company_input.text().strip(),
-            "location": self.location_input.text().strip(),
-            "salary": self.salary_input.text().strip(),
-            "category_id": self.category_combo.currentData(),
-            "description": self.desc_input.toPlainText().strip()
+            "title": self.ui.txt_title.text().strip(),
+            "company": self.ui.txt_company.text().strip(),
+            "location": self.ui.txt_location.text().strip(),
+            "salary": self.ui.txt_salary.text().strip(),
+            "category_id": self.ui.combo_category.currentData(),
+            "description": self.ui.txt_description.toPlainText().strip()
         }
 
 
 class EmployerDashboard(BaseWidget):
+    """İşveren ana paneli"""
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
         self.user = AuthManager.current_user
-        self.setup_ui()
 
-    def setup_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 16)
+        # Başlığı güncelle
+        self.ui.lbl_header.setText(f"İşveren Paneli — {self.user.username}")
 
-        header = QLabel(f"İşveren Paneli — {self.user.username}")
-        header.setStyleSheet("font-size: 20px; font-weight: bold;")
-        layout.addWidget(header)
+        # Designer'daki butonları fonksiyonlara bağla
+        self.ui.btn_add_job.clicked.connect(self.add_job)
+        self.ui.btn_accept.clicked.connect(lambda: self.change_app_status("accepted"))
+        self.ui.btn_reject.clicked.connect(lambda: self.change_app_status("rejected"))
 
-        tabs = QTabWidget()
-
-        # Tab 1: İlanlarım
-        self.jobs_tab = QWidget()
-        self.setup_jobs_tab()
-        tabs.addTab(self.jobs_tab, "İlanlarım")
-
-        # Tab 2: Başvurular
-        self.apps_tab = QWidget()
-        self.setup_apps_tab()
-        tabs.addTab(self.apps_tab, "Başvurular")
-
-        layout.addWidget(tabs)
-
-    def setup_jobs_tab(self):
-        layout = QVBoxLayout(self.jobs_tab)
-        layout.setSpacing(8)
-
-        btn_row = QHBoxLayout()
-        add_btn = QPushButton("+ Yeni İlan Ekle")
-        add_btn.setStyleSheet("background-color: #16a34a; color: white; border-radius: 5px; padding: 6px 14px;")
-        add_btn.clicked.connect(self.add_job)
-        btn_row.addWidget(add_btn)
-        btn_row.addStretch()
-        layout.addLayout(btn_row)
-
-        self.jobs_table = QTableWidget()
-        self.jobs_table.setColumnCount(6)
-        self.jobs_table.setHorizontalHeaderLabels(["ID", "Başlık", "Şirket", "Konum", "Durum", "İşlem"])
-        self.jobs_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.jobs_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.jobs_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.jobs_table.setAlternatingRowColors(True)
-        self.jobs_table.verticalHeader().setVisible(False)
-        self.jobs_table.setFrameShape(QFrame.NoFrame)
-        layout.addWidget(self.jobs_table)
+        # Tabloları doldur
         self.refresh_jobs()
-
-    def setup_apps_tab(self):
-        layout = QVBoxLayout(self.apps_tab)
-
-        self.apps_table = QTableWidget()
-        self.apps_table.setColumnCount(6)
-        self.apps_table.setHorizontalHeaderLabels(["ID", "İlan", "Başvuran", "E-posta", "Tarih", "Durum"])
-        self.apps_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.apps_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.apps_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.apps_table.setAlternatingRowColors(True)
-        self.apps_table.verticalHeader().setVisible(False)
-        self.apps_table.setFrameShape(QFrame.NoFrame)
-        layout.addWidget(self.apps_table)
-
-        btn_row = QHBoxLayout()
-        accept_btn = QPushButton("Kabul Et")
-        accept_btn.setStyleSheet("background-color: #16a34a; color: white; border-radius: 5px; padding: 5px 14px;")
-        accept_btn.clicked.connect(lambda: self.change_app_status("accepted"))
-        reject_btn = QPushButton("Reddet")
-        reject_btn.setStyleSheet("background-color: #dc2626; color: white; border-radius: 5px; padding: 5px 14px;")
-        reject_btn.clicked.connect(lambda: self.change_app_status("rejected"))
-        btn_row.addWidget(accept_btn)
-        btn_row.addWidget(reject_btn)
-        btn_row.addStretch()
-        layout.addLayout(btn_row)
-
         self.refresh_apps()
 
     def refresh_jobs(self):
+        """İlanlarım tablosunu günceller"""
         jobs = Job.get_by_employer(self.user.id)
-        self.jobs_table.setRowCount(len(jobs))
+        self.ui.jobs_table.setRowCount(len(jobs))
         for i, job in enumerate(jobs):
-            self.jobs_table.setItem(i, 0, QTableWidgetItem(str(job.id)))
-            self.jobs_table.setItem(i, 1, QTableWidgetItem(job.title))
-            self.jobs_table.setItem(i, 2, QTableWidgetItem(job.company))
-            self.jobs_table.setItem(i, 3, QTableWidgetItem(job.location))
+            self.ui.jobs_table.setItem(i, 0, QTableWidgetItem(str(job.id)))
+            self.ui.jobs_table.setItem(i, 1, QTableWidgetItem(job.title))
+            self.ui.jobs_table.setItem(i, 2, QTableWidgetItem(job.company))
+            self.ui.jobs_table.setItem(i, 3, QTableWidgetItem(job.location))
+
+            # Durum sütunu renklendirme
             durum = "Aktif" if job.is_active else "Pasif"
             status_item = QTableWidgetItem(durum)
             status_item.setForeground(QColor("#16a34a") if job.is_active else QColor("#dc2626"))
-            self.jobs_table.setItem(i, 4, status_item)
+            self.ui.jobs_table.setItem(i, 4, status_item)
 
+            # Sil butonu hücresi
             del_btn = QPushButton("Sil")
-            del_btn.setStyleSheet("color: #dc2626; border: none;")
+            del_btn.setStyleSheet("color: #dc2626; border: none; font-weight: bold;")
             del_btn.clicked.connect(lambda _, j=job: self.delete_job(j))
-            self.jobs_table.setCellWidget(i, 5, del_btn)
+            self.ui.jobs_table.setCellWidget(i, 5, del_btn)
 
     def refresh_apps(self):
+        """Başvurular tablosunu günceller"""
         jobs = Job.get_by_employer(self.user.id)
         all_apps = []
         for job in jobs:
             for app in Application.get_by_job(job.id):
                 all_apps.append((job, app))
 
-        self.apps_table.setRowCount(len(all_apps))
+        self.ui.apps_table.setRowCount(len(all_apps))
         status_colors = {"pending": "#fef3c7", "accepted": "#dcfce7", "rejected": "#fee2e2"}
 
         for i, (job, app) in enumerate(all_apps):
-            self.apps_table.setItem(i, 0, QTableWidgetItem(str(app["id"])))
-            self.apps_table.setItem(i, 1, QTableWidgetItem(job.title))
-            self.apps_table.setItem(i, 2, QTableWidgetItem(app["username"]))
-            self.apps_table.setItem(i, 3, QTableWidgetItem(app["email"]))
-            self.apps_table.setItem(i, 4, QTableWidgetItem(str(app["applied_at"])[:10]))
-            from application import ApplicationStatus
-            status_item = QTableWidgetItem(ApplicationStatus.LABELS.get(app["status"], app["status"]))
-            status_item.setBackground(QColor(status_colors.get(app["status"], "#fff")))
+            self.ui.apps_table.setItem(i, 0, QTableWidgetItem(str(app["id"])))
+            self.ui.apps_table.setItem(i, 1, QTableWidgetItem(job.title))
+            self.ui.apps_table.setItem(i, 2, QTableWidgetItem(app["username"]))
+            self.ui.apps_table.setItem(i, 3, QTableWidgetItem(app["email"]))
+            self.ui.apps_table.setItem(i, 4, QTableWidgetItem(str(app["applied_at"])[:10]))
+
+            status_label = ApplicationStatus.LABELS.get(app["status"], app["status"])
+            status_item = QTableWidgetItem(status_label)
+            status_item.setBackground(QColor(status_colors.get(app["status"], "#ffffff")))
             status_item.setTextAlignment(Qt.AlignCenter)
-            self.apps_table.setItem(i, 5, status_item)
+            self.ui.apps_table.setItem(i, 5, status_item)
 
     def add_job(self):
         dialog = AddJobDialog(self)
@@ -226,11 +146,11 @@ class EmployerDashboard(BaseWidget):
             self.refresh_jobs()
 
     def change_app_status(self, new_status):
-        row = self.apps_table.currentRow()
+        row = self.ui.apps_table.currentRow()
         if row < 0:
             self.show_message("Uyarı", "Lütfen bir başvuru seçin.", "warning")
             return
-        app_id = int(self.apps_table.item(row, 0).text())
+        app_id = int(self.ui.apps_table.item(row, 0).text())
         Application.update_status(app_id, new_status)
         app = Application.get_by_id(app_id)
         if app:
