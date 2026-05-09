@@ -1,5 +1,4 @@
 import sqlite3
-import os
 
 DB_PATH = "job_posting.db"
 
@@ -10,11 +9,13 @@ class DatabaseManager:
         self.cursor = None
         self.connect()
         self.create_tables()
+        self.seed_admin()
 
     def connect(self):
         self.conn = sqlite3.connect(DB_PATH)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
+        self.cursor.execute("PRAGMA foreign_keys = ON;")
 
     def create_tables(self):
         self.cursor.executescript("""
@@ -43,7 +44,7 @@ class DatabaseManager:
                 description TEXT,
                 is_active INTEGER DEFAULT 1,
                 created_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY (employer_id) REFERENCES users(id),
+                FOREIGN KEY (employer_id) REFERENCES users(id) ON DELETE CASCADE,
                 FOREIGN KEY (category_id) REFERENCES job_categories(id)
             );
 
@@ -54,8 +55,8 @@ class DatabaseManager:
                 cover_letter TEXT,
                 status TEXT DEFAULT 'pending',
                 applied_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY (job_id) REFERENCES jobs(id),
-                FOREIGN KEY (applicant_id) REFERENCES users(id)
+                FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+                FOREIGN KEY (applicant_id) REFERENCES users(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS profiles (
@@ -65,7 +66,7 @@ class DatabaseManager:
                 phone TEXT,
                 bio TEXT,
                 skills TEXT,
-                FOREIGN KEY (user_id) REFERENCES users(id)
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS notifications (
@@ -74,16 +75,26 @@ class DatabaseManager:
                 message TEXT NOT NULL,
                 is_read INTEGER DEFAULT 0,
                 created_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY (user_id) REFERENCES users(id)
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             );
         """)
         self.conn.commit()
 
-        # Varsayılan kategoriler
         default_cats = ["Yazılım", "Pazarlama", "Tasarım", "Muhasebe", "İnsan Kaynakları", "Satış", "Diğer"]
         for cat in default_cats:
             self.cursor.execute("INSERT OR IGNORE INTO job_categories (name) VALUES (?)", (cat,))
         self.conn.commit()
+
+    def seed_admin(self):
+        existing = self.cursor.execute(
+            "SELECT id FROM users WHERE role='admin'"
+        ).fetchone()
+        if not existing:
+            self.cursor.execute(
+                "INSERT INTO users (username, password, email, role) VALUES (?,?,?,?)",
+                ("admin", "admin123", "admin@admin.com", "admin")
+            )
+            self.conn.commit()
 
     def execute(self, query, params=()):
         self.cursor.execute(query, params)
@@ -100,7 +111,6 @@ class DatabaseManager:
 
     def close(self):
         if self.conn:
-            self.conn.close()
-
+             self.conn.close()
 
 db = DatabaseManager()

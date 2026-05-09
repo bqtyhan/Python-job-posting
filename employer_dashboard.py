@@ -5,7 +5,6 @@ from base_widget import BaseWidget
 from job import Job, JobCategory
 from application import Application, ApplicationStatus
 from auth_manager import AuthManager
-from notification_manager import NotificationManager
 
 # Designer'dan çevirdiğin dosyaları import ediyoruz
 from ui_employer_dashboard import Ui_Form

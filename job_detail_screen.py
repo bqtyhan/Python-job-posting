@@ -4,7 +4,6 @@ from ui_job_detail import Ui_Form
 from job import Job
 from application import Application
 from auth_manager import AuthManager
-from notification_manager import NotificationManager
 
 
 class JobDetailScreen(BaseWidget):

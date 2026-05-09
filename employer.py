@@ -1,3 +1,4 @@
+import re
 from database import db
 
 
@@ -17,6 +18,9 @@ class Employer:
         return Employer(user_id)
 
     def save(self):
+        if self.phone and not re.match(r"^(\+90|0)?[0-9]{10}$", self.phone):
+            return False, "Geçerli bir telefon numarası girin."
+
         existing = db.fetchone("SELECT id FROM profiles WHERE user_id = ?", (self.user_id,))
         if existing:
             db.execute(
@@ -28,6 +32,7 @@ class Employer:
                 "INSERT INTO profiles (user_id, full_name, phone, bio, skills) VALUES (?,?,?,?,?)",
                 (self.user_id, self.full_name, self.phone, self.bio, self.skills)
             )
+        return True, "Profil güncellendi."
 
     def get_my_jobs(self):
         from job import Job
