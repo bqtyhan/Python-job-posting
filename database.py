@@ -1,10 +1,14 @@
 import sqlite3
 
+# Veritabanı dosyasının yolu
 DB_PATH = "job_posting.db"
-
 
 class DatabaseManager:
     def __init__(self):
+        """
+        Sınıf başlatıldığında veritabanı bağlantısını kurar,
+        tabloları oluşturur ve varsayılan admin kullanıcısını ekler.
+        """
         self.conn = None
         self.cursor = None
         self.connect()
@@ -12,12 +16,20 @@ class DatabaseManager:
         self.seed_admin()
 
     def connect(self):
+        """
+        SQLite veritabanına bağlantı sağlar, yabancı anahtar (foreign key)
+        desteğini açar ve sonuçların sözlük yapısında (Row) dönmesini ayarlar.
+        """
         self.conn = sqlite3.connect(DB_PATH)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
         self.cursor.execute("PRAGMA foreign_keys = ON;")
 
     def create_tables(self):
+        """
+        Sistem için gerekli olan ana tabloları (Kullanıcılar, Kategoriler,
+        İşler ve Başvurular) veritabanında oluşturur.
+        """
         self.cursor.executescript("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,34 +70,20 @@ class DatabaseManager:
                 FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
                 FOREIGN KEY (applicant_id) REFERENCES users(id) ON DELETE CASCADE
             );
-
-            CREATE TABLE IF NOT EXISTS profiles (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER UNIQUE NOT NULL,
-                full_name TEXT,
-                phone TEXT,
-                bio TEXT,
-                skills TEXT,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            );
-
-            CREATE TABLE IF NOT EXISTS notifications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                message TEXT NOT NULL,
-                is_read INTEGER DEFAULT 0,
-                created_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            );
         """)
         self.conn.commit()
 
+        # Varsayılan iş kategorilerini ekler
         default_cats = ["Yazılım", "Pazarlama", "Tasarım", "Muhasebe", "İnsan Kaynakları", "Satış", "Diğer"]
         for cat in default_cats:
             self.cursor.execute("INSERT OR IGNORE INTO job_categories (name) VALUES (?)", (cat,))
         self.conn.commit()
 
     def seed_admin(self):
+        """
+        Sistemde herhangi bir admin bulunup bulunmadığını kontrol eder,
+        eğer yoksa varsayılan bir yönetici hesabı oluşturur.
+        """
         existing = self.cursor.execute(
             "SELECT id FROM users WHERE role='admin'"
         ).fetchone()
@@ -97,20 +95,34 @@ class DatabaseManager:
             self.conn.commit()
 
     def execute(self, query, params=()):
+        """
+        Verilen SQL sorgusunu parametrelerle birlikte çalıştırır
+        ve değişiklikleri veritabanına kaydeder (commit).
+        """
         self.cursor.execute(query, params)
         self.conn.commit()
         return self.cursor
 
     def fetchone(self, query, params=()):
+        """
+        Verilen sorguyu çalıştırır ve sonuç kümesinden yalnızca ilk satırı döner.
+        """
         self.cursor.execute(query, params)
         return self.cursor.fetchone()
 
     def fetchall(self, query, params=()):
+        """
+        Verilen sorguyu çalıştırır ve tüm sonuçları bir liste olarak döner.
+        """
         self.cursor.execute(query, params)
         return self.cursor.fetchall()
 
     def close(self):
+        """
+        Açık olan veritabanı bağlantısını güvenli bir şekilde kapatır.
+        """
         if self.conn:
              self.conn.close()
 
+# Uygulama genelinde kullanılacak veritabanı yöneticisi nesnesi
 db = DatabaseManager()
